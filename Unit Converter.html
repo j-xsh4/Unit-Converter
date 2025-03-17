@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Converter</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --secondary: #2ecc71;
+            --secondary-dark: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --gray: #95a5a6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary-dark);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .tab-button {
+            flex: 1;
+            background-color: var(--light);
+            border: none;
+            padding: 1rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button:hover {
+            background-color: #d6dbdf;
+        }
+        
+        .tab-button.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #dde;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+        
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #dde;
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: white;
+            cursor: pointer;
+            transition: border 0.3s ease;
+        }
+        
+        select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .unit-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .unit-col {
+            flex: 1;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f1f9ff;
+            border-left: 4px solid var(--primary);
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .result-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .result-formula {
+            margin-top: 0.5rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Unit Converter</h1>
+            <p class="subtitle">Convert between various units of measurement</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-button active" data-tab="length">Length</button>
+            <button class="tab-button" data-tab="weight">Weight</button>
+            <button class="tab-button" data-tab="temperature">Temperature</button>
+        </div>
+        
+        <!-- Length Conversion -->
+        <div id="length" class="tab-content active">
+            <form id="length-form">
+                <div class="form-group">
+                    <label for="length-value">Enter Value:</label>
+                    <input type="number" id="length-value" step="any" required>
+                </div>
+                
+                <div class="form-group unit-row">
+                    <div class="unit-col">
+                        <label for="length-from">From:</label>
+                        <select id="length-from" required>
+                            <option value="mm">Millimeters (mm)</option>
+                            <option value="cm">Centimeters (cm)</option>
+                            <option value="m" selected>Meters (m)</option>
+                            <option value="km">Kilometers (km)</option>
+                            <option value="in">Inches (in)</option>
+                            <option value="ft">Feet (ft)</option>
+                            <option value="yd">Yards (yd)</option>
+                            <option value="mi">Miles (mi)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="unit-col">
+                        <label for="length-to">To:</label>
+                        <select id="length-to" required>
+                            <option value="mm">Millimeters (mm)</option>
+                            <option value="cm">Centimeters (cm)</option>
+                            <option value="m">Meters (m)</option>
+                            <option value="km">Kilometers (km)</option>
+                            <option value="in">Inches (in)</option>
+                            <option value="ft" selected>Feet (ft)</option>
+                            <option value="yd">Yards (yd)</option>
+                            <option value="mi">Miles (mi)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit">Convert</button>
+            </form>
+            
+            <div id="length-result" class="result">
+                <div class="result-text"></div>
+                <div class="result-formula"></div>
+            </div>
+        </div>
+        
+        <!-- Weight Conversion -->
+        <div id="weight" class="tab-content">
+            <form id="weight-form">
+                <div class="form-group">
+                    <label for="weight-value">Enter Value:</label>
+                    <input type="number" id="weight-value" step="any" required>
+                </div>
+                
+                <div class="form-group unit-row">
+                    <div class="unit-col">
+                        <label for="weight-from">From:</label>
+                        <select id="weight-from" required>
+                            <option value="mg">Milligrams (mg)</option>
+                            <option value="g">Grams (g)</option>
+                            <option value="kg" selected>Kilograms (kg)</option>
+                            <option value="oz">Ounces (oz)</option>
+                            <option value="lb">Pounds (lb)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="unit-col">
+                        <label for="weight-to">To:</label>
+                        <select id="weight-to" required>
+                            <option value="mg">Milligrams (mg)</option>
+                            <option value="g">Grams (g)</option>
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="oz">Ounces (oz)</option>
+                            <option value="lb" selected>Pounds (lb)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit">Convert</button>
+            </form>
+            
+            <div id="weight-result" class="result">
+                <div class="result-text"></div>
+                <div class="result-formula"></div>
+            </div>
+        </div>
+        
+        <!-- Temperature Conversion -->
+        <div id="temperature" class="tab-content">
+            <form id="temperature-form">
+                <div class="form-group">
+                    <label for="temperature-value">Enter Value:</label>
+                    <input type="number" id="temperature-value" step="any" required>
+                </div>
+                
+                <div class="form-group unit-row">
+                    <div class="unit-col">
+                        <label for="temperature-from">From:</label>
+                        <select id="temperature-from" required>
+                            <option value="c" selected>Celsius (°C)</option>
+                            <option value="f">Fahrenheit (°F)</option>
+                            <option value="k">Kelvin (K)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="unit-col">
+                        <label for="temperature-to">To:</label>
+                        <select id="temperature-to" required>
+                            <option value="c">Celsius (°C)</option>
+                            <option value="f" selected>Fahrenheit (°F)</option>
+                            <option value="k">Kelvin (K)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit">Convert</button>
+            </form>
+            
+            <div id="temperature-result" class="result">
+                <div class="result-text"></div>
+                <div class="result-formula"></div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 Unit Converter | All conversion factors are approximate</p>
+        </div>
+    </div>
+
+    <script>
+        // Tab functionality
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                button.classList.add('active');
+                document.getElementById(button.dataset.tab).classList.add('active');
+                
+                // Hide results when switching tabs
+                document.querySelectorAll('.result').forEach(result => {
+                    result.classList.remove('show');
+                });
+            });
+        });
+        
+        // Conversion factors
+        const lengthFactors = {
+            "mm": 0.001,
+            "cm": 0.01,
+            "m": 1,
+            "km": 1000,
+            "in": 0.0254,
+            "ft": 0.3048,
+            "yd": 0.9144,
+            "mi": 1609.34
+        };
+        
+        const weightFactors = {
+            "mg": 0.001,
+            "g": 1,
+            "kg": 1000,
+            "oz": 28.3495,
+            "lb": 453.592
+        };
+        
+        // Length conversion form handling
+        document.getElementById('length-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const value = parseFloat(document.getElementById('length-value').value);
+            const fromUnit = document.getElementById('length-from').value;
+            const toUnit = document.getElementById('length-to').value;
+            
+            if (fromUnit === toUnit) {
+                showResult('length', value, value, fromUnit, toUnit, "No conversion needed");
+                return;
+            }
+            
+            const valueInMeters = value * lengthFactors[fromUnit];
+            const convertedValue = valueInMeters / lengthFactors[toUnit];
+            
+            const formula = `Formula: ${value} ${getUnitName(fromUnit)} × ${lengthFactors[fromUnit]} = ${valueInMeters.toFixed(6)} m, then ${valueInMeters.toFixed(6)} m ÷ ${lengthFactors[toUnit]} = ${convertedValue.toFixed(6)} ${getUnitName(toUnit)}`;
+            
+            showResult('length', value, convertedValue, fromUnit, toUnit, formula);
+        });
+        
+        // Weight conversion form handling
+        document.getElementById('weight-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const value = parseFloat(document.getElementById('weight-value').value);
+            const fromUnit = document.getElementById('weight-from').value;
+            const toUnit = document.getElementById('weight-to').value;
+            
+            if (fromUnit === toUnit) {
+                showResult('weight', value, value, fromUnit, toUnit, "No conversion needed");
+                return;
+            }
+            
+            const valueInGrams = value * weightFactors[fromUnit];
+            const convertedValue = valueInGrams / weightFactors[toUnit];
+            
+            const formula = `Formula: ${value} ${getUnitName(fromUnit)} × ${weightFactors[fromUnit]} = ${valueInGrams.toFixed(6)} g, then ${valueInGrams.toFixed(6)} g ÷ ${weightFactors[toUnit]} = ${convertedValue.toFixed(6)} ${getUnitName(toUnit)}`;
+            
+            showResult('weight', value, convertedValue, fromUnit, toUnit, formula);
+        });
+        
+        // Temperature conversion form handling
+        document.getElementById('temperature-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const value = parseFloat(document.getElementById('temperature-value').value);
+            const fromUnit = document.getElementById('temperature-from').value;
+            const toUnit = document.getElementById('temperature-to').value;
+            
+            if (fromUnit === toUnit) {
+                showResult('temperature', value, value, fromUnit, toUnit, "No conversion needed");
+                return;
+            }
+            
+            let celsius, convertedValue, formula;
+            
+            // Convert to Celsius as intermediate step
+            if (fromUnit === "c") {
+                celsius = value;
+            } else if (fromUnit === "f") {
+                celsius = (value - 32) * 5 / 9;
+                formula = `${value} °F → °C: (${value} - 32) × 5/9 = ${celsius.toFixed(2)} °C`;
+            } else { // fromUnit === "k"
+                celsius = value - 273.15;
+                formula = `${value} K → °C: ${value} - 273.15 = ${celsius.toFixed(2)} °C`;
+            }
+            
+            // Convert from Celsius to target unit
+            if (toUnit === "c") {
+                convertedValue = celsius;
+                if (fromUnit !== "c") {
+                    formula += `, ${celsius.toFixed(2)} °C = ${convertedValue.toFixed(2)} °C`;
+                }
+            } else if (toUnit === "f") {
+                convertedValue = (celsius * 9 / 5) + 32;
+                if (fromUnit === "c") {
+                    formula = `${value} °C → °F: (${value} × 9/5) + 32 = ${convertedValue.toFixed(2)} °F`;
+                } else {
+                    formula += ` → °F: (${celsius.toFixed(2)} × 9/5) + 32 = ${convertedValue.toFixed(2)} °F`;
+                }
+            } else { // toUnit === "k"
+                convertedValue = celsius + 273.15;
+                if (fromUnit === "c") {
+                    formula = `${value} °C → K: ${value} + 273.15 = ${convertedValue.toFixed(2)} K`;
+                } else {
+                    formula += ` → K: ${celsius.toFixed(2)} + 273.15 = ${convertedValue.toFixed(2)} K`;
+                }
+            }
+            
+            showResult('temperature', value, convertedValue, fromUnit, toUnit, formula);
+        });
+        
+        // Helper function to show results
+        function showResult(type, originalValue, convertedValue, fromUnit, toUnit, formula) {
+            const resultBox = document.getElementById(`${type}-result`);
+            const resultText = resultBox.querySelector('.result-text');
+            const resultFormula = resultBox.querySelector('.result-formula');
+            
+            // Format units for display
+            const fromUnitDisplay = formatUnitForDisplay(fromUnit);
+            const toUnitDisplay = formatUnitForDisplay(toUnit);
+            
+            resultText.textContent = `${originalValue} ${fromUnitDisplay} = ${convertedValue.toFixed(4)} ${toUnitDisplay}`;
+            resultFormula.textContent = formula;
+            
+            resultBox.classList.add('show');
+        }
+        
+        // Helper function to get full unit name
+        function getUnitName(unit) {
+            const unitNames = {
+                "mm": "millimeters",
+                "cm": "centimeters",
+                "m": "meters",
+                "km": "kilometers",
+                "in": "inches",
+                "ft": "feet",
+                "yd": "yards",
+                "mi": "miles",
+                "mg": "milligrams",
+                "g": "grams",
+                "kg": "kilograms",
+                "oz": "ounces",
+                "lb": "pounds",
+                "c": "Celsius",
+                "f": "Fahrenheit",
+                "k": "Kelvin"
+            };
+            
+            return unitNames[unit] || unit;
+        }
+        
+        // Helper function to format units for display
+        function formatUnitForDisplay(unit) {
+            const unitSymbols = {
+                "mm": "mm",
+                "cm": "cm",
+                "m": "m",
+                "km": "km",
+                "in": "in",
+                "ft": "ft",
+                "yd": "yd",
+                "mi": "mi",
+                "mg": "mg",
+                "g": "g",
+                "kg": "kg",
+                "oz": "oz",
+                "lb": "lb",
+                "c": "°C",
+                "f": "°F",
+                "k": "K"
+            };
+            
+            return unitSymbols[unit] || unit;
+        }
+        
+        // Prevent selecting the same unit for from and to
+        document.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', function() {
+                const typeId = this.id.split('-')[0]; // e.g., "length" from "length-from"
+                const isFrom = this.id.includes('-from');
+                const selectedValue = this.value;
+                
+                const otherSelect = document.getElementById(`${typeId}-${isFrom ? 'to' : 'from'}`);
+                
+                // If both selects have the same value, change the other one
+                if (otherSelect.value === selectedValue) {
+                    const options = otherSelect.options;
+                    for (let i = 0; i < options.length; i++) {
+                        if (options[i].value !== selectedValue) {
+                            otherSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
